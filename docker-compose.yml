@@ -1,0 +1,44 @@
+services:
+  patient-db:
+    image: postgres:17
+    container_name: patient-db-container
+    environment:
+      - POSTGRES_USER=${PATIENT_DB_USER}
+      - POSTGRES_PASSWORD=${PATIENT_DB_PASSWORD}
+      - POSTGRES_DB=${PATIENT_DB_NAME}
+    ports: 
+      - "5000:5432"
+    volumes:
+      - patient-data:/var/lib/postgresql/data
+    networks:
+      - microservicesNetwork
+
+  patient-service:
+    build: ./patient-service/patient-service
+    container_name: patient-service-container
+    ports:
+      - "4000:4000"
+    environment:
+      - SPRING_DATASOURCE_URL:jdbc:postgresql://patient-db:5432/${PATIENT_DB_NAME}
+      - SPRING_DATASOURCE_USERNAME:${PATIENT_DB_USER}
+      - SPRING_DATASOURCE_PASSWORD:${PATIENT_DB_PASSWORD}
+    networks:
+      - microservicesNetwork
+    depends_on:
+      - patient-db
+
+  billing-service:
+    build: ./billing-service
+    container_name: billing-service-container
+    ports:
+      - "4001:4001"
+      - "9001:9001"
+    networks:
+      - microservicesNetwork
+
+
+networks:
+  microservicesNetwork:
+
+volumes:
+  patient-data:
