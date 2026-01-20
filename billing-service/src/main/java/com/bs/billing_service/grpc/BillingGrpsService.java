@@ -10,7 +10,7 @@ import net.devh.boot.grpc.server.service.GrpcService;
 
 @GrpcService
 public class BillingGrpsService extends BillingServiceImplBase {
-    Logger log = LoggerFactory.getLogger(BillingGrpsService.class);
+    private static final Logger log = LoggerFactory.getLogger(BillingGrpsService.class);
 
     @Override
     public void createBillingAccount(billing.BillingRequest billingRequest,

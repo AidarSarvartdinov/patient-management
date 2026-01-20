@@ -19,13 +19,17 @@ services:
     ports:
       - "4000:4000"
     environment:
-      - SPRING_DATASOURCE_URL:jdbc:postgresql://patient-db:5432/${PATIENT_DB_NAME}
-      - SPRING_DATASOURCE_USERNAME:${PATIENT_DB_USER}
-      - SPRING_DATASOURCE_PASSWORD:${PATIENT_DB_PASSWORD}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://patient-db:5432/${PATIENT_DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${PATIENT_DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${PATIENT_DB_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - BILLING_SERVICE_ADDRESS=billing-service
+      - BILLING_SERVICE_GRPC_PORT=${BILLING_SERVICE_GRPC_PORT}
     networks:
       - microservicesNetwork
     depends_on:
       - patient-db
+      - billing-service
 
   billing-service:
     build: ./billing-service
