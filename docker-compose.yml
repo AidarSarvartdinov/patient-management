@@ -25,6 +25,7 @@ services:
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - BILLING_SERVICE_ADDRESS=billing-service
       - BILLING_SERVICE_GRPC_PORT=${BILLING_SERVICE_GRPC_PORT}
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
     networks:
       - microservicesNetwork
     depends_on:
@@ -37,6 +38,28 @@ services:
     ports:
       - "4001:4001"
       - "9001:9001"
+    networks:
+      - microservicesNetwork
+
+  kafka:
+    image: bitnamilegacy/kafka:latest
+    container_name: kafka-container
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    environment:
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+
+      # Bitnami
+      - KAFKA_KRAFT_CLUSTER_ID=fosfjeoifj39fj9ew33f
+      - ALLOW_PLAINTEXT_LISTENER=yes
     networks:
       - microservicesNetwork
 
