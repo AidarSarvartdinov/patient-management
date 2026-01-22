@@ -31,6 +31,7 @@ services:
     depends_on:
       - patient-db
       - billing-service
+      - kafka
 
   billing-service:
     build: ./billing-service
@@ -40,6 +41,18 @@ services:
       - "9001:9001"
     networks:
       - microservicesNetwork
+
+  analytics-service:
+    build: ./analytics-service
+    container_name: analytics-service-container
+    ports:
+      - "4002:4002"
+    environment:
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    networks:
+      - microservicesNetwork
+    depends_on:
+      - kafka
 
   kafka:
     image: bitnamilegacy/kafka:latest

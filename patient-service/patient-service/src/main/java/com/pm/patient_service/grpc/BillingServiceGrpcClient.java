@@ -21,6 +21,7 @@ public class BillingServiceGrpcClient {
             @Value("${billing.service.grpc.port:9001}") int serverPort) {
         log.info("Connecting to Billing Service GRPC service at {}:{}", serverAddress, serverPort);
 
+        // TODO: Add secure connection
         ManagedChannel channel = ManagedChannelBuilder.forAddress(serverAddress, serverPort)
                 .usePlaintext().build();
 
