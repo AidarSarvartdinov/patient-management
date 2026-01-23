@@ -16,8 +16,6 @@ services:
   patient-service:
     build: ./patient-service/patient-service
     container_name: patient-service-container
-    ports:
-      - "4000:4000"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://patient-db:5432/${PATIENT_DB_NAME}
       - SPRING_DATASOURCE_USERNAME=${PATIENT_DB_USER}
@@ -36,17 +34,12 @@ services:
   billing-service:
     build: ./billing-service
     container_name: billing-service-container
-    ports:
-      - "4001:4001"
-      - "9001:9001"
     networks:
       - microservicesNetwork
 
   analytics-service:
     build: ./analytics-service
     container_name: analytics-service-container
-    ports:
-      - "4002:4002"
     environment:
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
     networks:
@@ -54,11 +47,20 @@ services:
     depends_on:
       - kafka
 
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway-container
+    ports:
+      - "4004:4004"
+    networks:
+      - microservicesNetwork
+    depends_on:
+      - patient-service
+
   kafka:
     image: bitnamilegacy/kafka:latest
     container_name: kafka-container
     ports:
-      - "9092:9092"
       - "9094:9094"
     environment:
       - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
