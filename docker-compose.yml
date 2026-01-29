@@ -3,8 +3,6 @@ services:
   auth-service:
     build: ./auth-service
     container_name: auth-service-container
-    ports:
-      - "4005:4005"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-db:5432/${AUTH_DB_NAME}
       - SPRING_DATASOURCE_USERNAME=${AUTH_DB_USER}
@@ -20,7 +18,6 @@ services:
     networks:
       - microservicesNetwork
     depends_on:
-      # - auth-db
       auth-db:
         condition: service_healthy
         restart: true
@@ -104,10 +101,13 @@ services:
     container_name: api-gateway-container
     ports:
       - "4004:4004"
+    environment:
+      - AUTH_SERVICE_URL=http://auth-service:4005
     networks:
       - microservicesNetwork
     depends_on:
       - patient-service
+      - auth-service
 
   kafka:
     image: bitnamilegacy/kafka:latest
