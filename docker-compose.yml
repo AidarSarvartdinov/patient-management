@@ -1,4 +1,30 @@
 services:
+
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service-container
+    ports:
+      - "4005:4005"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-db:5432/${AUTH_DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${AUTH_DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${AUTH_DB_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.PostgreSQLDialect
+      - SPRING_SQL_INIT_MODE=always
+      
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+      - SPRING_JPA_SHOW_SQL=true
+
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - microservicesNetwork
+    depends_on:
+      # - auth-db
+      auth-db:
+        condition: service_healthy
+        restart: true
+
   patient-db:
     image: postgres:17
     container_name: patient-db-container
@@ -12,6 +38,11 @@ services:
       - patient-data:/var/lib/postgresql/data
     networks:
       - microservicesNetwork
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 2s
+      retries: 5
 
   patient-service:
     build: ./patient-service/patient-service
@@ -30,6 +61,27 @@ services:
       - patient-db
       - billing-service
       - kafka
+
+  auth-db:
+    image: postgres:17
+    container_name: auth-db-container
+    environment:
+      - POSTGRES_USER=${AUTH_DB_USER}
+      - POSTGRES_PASSWORD=${AUTH_DB_PASSWORD}
+      - POSTGRES_DB=${AUTH_DB_NAME}
+    volumes:
+      - auth-data:/var/lib/postgresql/data
+    ports:
+      - "5001:5432"
+    networks:
+      - microservicesNetwork
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 2s
+      retries: 5
+
+  
 
   billing-service:
     build: ./billing-service
@@ -84,3 +136,4 @@ networks:
 
 volumes:
   patient-data:
+  auth-data:
