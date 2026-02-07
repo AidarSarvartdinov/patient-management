@@ -83,8 +83,38 @@ services:
   billing-service:
     build: ./billing-service
     container_name: billing-service-container
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://billing-db:5432/${BILLING_DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${BILLING_DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${BILLING_DB_PASSWORD}
+      - SPRING_SQL_INIT_MODE=always
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - STRIPE_API_KEY=${STRIPE_API_KEY}
+      - STRIPE_API_PUBLIC_KEY=${STRIPE_API_PUBLIC_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+    depends_on:
+      billing-db:
+        condition: service_healthy
+        restart: true
     networks:
       - microservicesNetwork
+
+  billing-db:
+    image: postgres:17
+    container_name: billing-db-container
+    environment:
+      - POSTGRES_USER=${BILLING_DB_USER}
+      - POSTGRES_PASSWORD=${BILLING_DB_PASSWORD}
+      - POSTGRES_DB=${BILLING_DB_NAME}
+    volumes:
+      - billing-data:/var/lib/postgresql/data
+    networks:
+      - microservicesNetwork
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 2s
+      retries: 5
 
   analytics-service:
     build: ./analytics-service
@@ -137,3 +167,4 @@ networks:
 volumes:
   patient-data:
   auth-data:
+  billing-data:
