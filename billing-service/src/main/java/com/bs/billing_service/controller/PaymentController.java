@@ -6,8 +6,6 @@ import com.bs.billing_service.dto.CreatePaymentRequest;
 import com.bs.billing_service.dto.CreatePaymentResponse;
 import com.bs.billing_service.service.PaymentService;
 import com.stripe.exception.StripeException;
-import com.stripe.model.Charge;
-import com.stripe.param.ChargeCreateParams;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
