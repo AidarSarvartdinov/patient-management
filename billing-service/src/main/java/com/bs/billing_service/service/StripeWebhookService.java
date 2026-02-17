@@ -5,11 +5,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.bs.billing_service.enums.PaymentFailureReason;
-import com.bs.billing_service.model.Payment;
-import com.bs.billing_service.repository.PaymentRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stripe.exception.SignatureVerificationException;
@@ -21,13 +17,12 @@ import com.stripe.net.Webhook;
 
 @Service
 public class StripeWebhookService {
-    private final PaymentRepository paymentRepository;
     private final String webhookSecret;
+    private final PaymentService paymentService;
 
-    public StripeWebhookService(PaymentRepository paymentRepository,
-            @Value("${STRIPE_WEBHOOK_SECRET}") String webhookSecret) {
-        this.paymentRepository = paymentRepository;
+    public StripeWebhookService(@Value("${STRIPE_WEBHOOK_SECRET}") String webhookSecret, PaymentService paymentService) {
         this.webhookSecret = webhookSecret;
+        this.paymentService = paymentService;
     }
 
     public void handle(String payload, String signature) throws SignatureVerificationException {
@@ -43,11 +38,7 @@ public class StripeWebhookService {
 
         UUID paymentId = UUID.fromString(session.getMetadata().get("paymentId"));
 
-        switch (event.getType()) {
-            case "checkout.session.completed" -> handleSuccess(paymentId);
-            case "payment_intent.payment_failed" -> handleFailure(paymentId);
-            case "checkout.session.expired" -> handleExpired(paymentId);
-        }
+        paymentService.processStripeEvent(event.getType(), paymentId);        
     }
 
     private Session extractSession(Event event) {
@@ -78,25 +69,6 @@ public class StripeWebhookService {
             throw new IllegalStateException(
                     "Failed to parse Stripe webhook raw JSON, eventId=" + event.getId(), e);
         }
-    }
-
-    @Transactional
-    public void handleSuccess(UUID paymentId) {
-        Payment payment = paymentRepository.findById(paymentId).orElseThrow();
-        payment.markPaid();
-        paymentRepository.save(payment);
-    }
-
-    @Transactional
-    public void handleFailure(UUID paymentId) {
-        Payment payment = paymentRepository.findById(paymentId).orElseThrow();
-        payment.markFailed(PaymentFailureReason.PAYMENT_FAILED);
-    }
-
-    @Transactional
-    public void handleExpired(UUID paymentId) {
-        Payment payment = paymentRepository.findById(paymentId).orElseThrow();
-        payment.markFailed(PaymentFailureReason.SESSION_EXPIRED);
     }
 
 }
