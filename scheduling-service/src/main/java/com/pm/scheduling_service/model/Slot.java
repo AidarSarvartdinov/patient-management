@@ -48,6 +48,9 @@ public class Slot {
     @Column(name = "created_at")
     private LocalDateTime bookedAt;
 
+    @Column(name = "reserved_at")
+    private LocalDateTime reservedAt;
+
     @Column(name = "cancellation_id")
     private UUID cancellationId;
 
@@ -97,6 +100,7 @@ public class Slot {
 
         this.slotStatus = SlotStatus.RESERVED;
         this.patientId = patientId;
+        this.reservedAt = now;
     }
 
     public void release(UUID cancellationId) {
@@ -113,6 +117,7 @@ public class Slot {
         this.patientId = null;
         this.cancellationId = null;
         this.bookedAt = null;
+        this.reservedAt = null;
 
     }
 
@@ -142,5 +147,6 @@ public class Slot {
 
         this.slotStatus = SlotStatus.FREE;
         this.patientId = null;
+        this.reservedAt = null;
     }
 }
