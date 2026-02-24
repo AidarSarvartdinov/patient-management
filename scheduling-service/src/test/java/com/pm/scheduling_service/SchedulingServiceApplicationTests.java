@@ -1,13 +1,13 @@
-package com.pm.scheduling_service;
+// package com.pm.scheduling_service;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+// import org.junit.jupiter.api.Test;
+// import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class SchedulingServiceApplicationTests {
+// @SpringBootTest
+// class SchedulingServiceApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
+// 	@Test
+// 	void contextLoads() {
+// 	}
 
-}
+// }

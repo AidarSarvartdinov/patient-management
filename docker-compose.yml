@@ -22,6 +22,25 @@ services:
         condition: service_healthy
         restart: true
 
+  auth-db:
+    image: postgres:17
+    container_name: auth-db-container
+    environment:
+      - POSTGRES_USER=${AUTH_DB_USER}
+      - POSTGRES_PASSWORD=${AUTH_DB_PASSWORD}
+      - POSTGRES_DB=${AUTH_DB_NAME}
+    volumes:
+      - auth-data:/var/lib/postgresql/data
+    ports:
+      - "5001:5432"
+    networks:
+      - microservicesNetwork
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 2s
+      retries: 5
+
   patient-db:
     image: postgres:17
     container_name: patient-db-container
@@ -59,27 +78,7 @@ services:
       - billing-service
       - kafka
 
-  auth-db:
-    image: postgres:17
-    container_name: auth-db-container
-    environment:
-      - POSTGRES_USER=${AUTH_DB_USER}
-      - POSTGRES_PASSWORD=${AUTH_DB_PASSWORD}
-      - POSTGRES_DB=${AUTH_DB_NAME}
-    volumes:
-      - auth-data:/var/lib/postgresql/data
-    ports:
-      - "5001:5432"
-    networks:
-      - microservicesNetwork
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 2s
-      retries: 5
-
   
-
   billing-service:
     build: ./billing-service
     container_name: billing-service-container
@@ -115,6 +114,42 @@ services:
       interval: 10s
       timeout: 2s
       retries: 5
+
+  scheduling-service:
+    build: ./scheduling-service
+    container_name: scheduling-service-container
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://scheduling-db:5432/${SCHEDULING_DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${SCHEDULING_DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${SCHEDULING_DB_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    depends_on:
+      scheduling-db:
+        condition: service_healthy
+        restart: true
+    networks:
+      - microservicesNetwork
+    ports:
+      - "4006:4006"
+
+  scheduling-db:
+    image: postgres:17
+    container_name: scheduling-db-container
+    environment:
+      - POSTGRES_USER=${SCHEDULING_DB_USER}
+      - POSTGRES_PASSWORD=${SCHEDULING_DB_PASSWORD}
+      - POSTGRES_DB=${SCHEDULING_DB_NAME}
+    volumes:
+      - scheduling-data:/var/lib/postgresql/data
+    networks:
+      - microservicesNetwork
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 2s
+      retries: 5
+    ports:
+      - "5004:5432"
 
   analytics-service:
     build: ./analytics-service
@@ -168,3 +203,4 @@ volumes:
   patient-data:
   auth-data:
   billing-data:
+  scheduling-data:
