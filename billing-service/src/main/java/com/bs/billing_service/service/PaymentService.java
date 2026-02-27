@@ -46,7 +46,7 @@ public class PaymentService {
             return new CreatePaymentResponse(payment.getId().toString(), payment.getStripeSessionUrl());
         }
 
-        StripeSessionResult session = stripeClient.creteCheckoutSession(payment);
+        StripeSessionResult session = stripeClient.createCheckoutSession(payment);
         payment = markPending(payment.getId(), session);
 
         return new CreatePaymentResponse(payment.getId().toString(), session.url());

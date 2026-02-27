@@ -1,4 +1,4 @@
-package com.pm.scheduling_service.repository;
+package com.pm.scheduling_service.domain.port;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.pm.scheduling_service.model.Slot;
+import com.pm.scheduling_service.domain.model.Slot;
 
 public interface SlotRepository extends JpaRepository<Slot, UUID> {
     @Query("""

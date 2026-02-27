@@ -1,4 +1,4 @@
-package com.pm.scheduling_service.enums;
+package com.pm.scheduling_service.domain.enums;
 
 public enum SlotStatus {
     RESERVED,

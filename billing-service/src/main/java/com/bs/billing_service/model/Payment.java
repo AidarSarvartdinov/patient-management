@@ -53,8 +53,8 @@ public class Payment {
     private PaymentFailureReason failureReason;
 
     @NotNull
-    @Column(name = "create_at")
-    private LocalDateTime createAt;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     @Version
     private Long version;
@@ -67,7 +67,7 @@ public class Payment {
         this.userId = userId;
         this.orderId = orderId;
         this.status = PaymentStatus.NEW;
-        this.createAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
  
     }
 
@@ -112,8 +112,8 @@ public class Payment {
         return orderId;
     }
 
-    public LocalDateTime getCreateAt() {
-        return createAt;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
     public Long getAmount() {

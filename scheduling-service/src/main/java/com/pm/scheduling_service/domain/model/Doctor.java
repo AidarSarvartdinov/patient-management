@@ -1,4 +1,4 @@
-package com.pm.scheduling_service.model;
+package com.pm.scheduling_service.domain.model;
 
 import java.util.UUID;
 

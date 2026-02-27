@@ -1,9 +1,9 @@
-package com.pm.scheduling_service.model;
+package com.pm.scheduling_service.domain.model;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.pm.scheduling_service.enums.SlotStatus;
+import com.pm.scheduling_service.domain.enums.SlotStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,6 +14,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -45,7 +46,7 @@ public class Slot {
     @Column(name = "patient_id")
     private UUID patientId;
 
-    @Column(name = "created_at")
+    @Column(name = "booked_at")
     private LocalDateTime bookedAt;
 
     @Column(name = "reserved_at")
@@ -54,20 +55,29 @@ public class Slot {
     @Column(name = "cancellation_id")
     private UUID cancellationId;
 
+    @Positive
+    @NotNull
+    private long price = 1;
+    private String currency = "USD";
+
     @Version
     private long version;
 
-    public Slot(UUID doctorId, LocalDateTime startTime, LocalDateTime endTime) {
+    public Slot(UUID doctorId, LocalDateTime startTime, LocalDateTime endTime, long price) {
         if (doctorId == null) {
             throw new IllegalArgumentException("doctorId must not be null");
         }
         if (!(startTime.isBefore(endTime))) {
             throw new IllegalArgumentException("startTime must be before endTime");
         }
+        if (price <= 0) {
+            throw new IllegalArgumentException("price must be positive");
+        }
 
         this.doctorId = doctorId;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.price = price;
     }
 
     public void confirmBooking(LocalDateTime now) {
@@ -85,7 +95,7 @@ public class Slot {
         }
 
         this.slotStatus = SlotStatus.CONFIRMED;
-        this.bookedAt = LocalDateTime.now();
+        this.bookedAt = now;
     }
 
     public void reserve(UUID patientId, LocalDateTime now) {
@@ -121,7 +131,7 @@ public class Slot {
 
     }
 
-    public void cancelAppointment(LocalDateTime now) {
+    public void cancelAppointment(LocalDateTime now, UUID cancellationId) {
         if (!slotStatus.equals(SlotStatus.CONFIRMED)) {
             throw new IllegalStateException(
                     "Cannot cancel appointment with status: " + slotStatus.toString());
@@ -132,7 +142,7 @@ public class Slot {
         }
 
         this.slotStatus = SlotStatus.CANCELLATION_PENDING;
-        this.cancellationId = UUID.randomUUID();
+        this.cancellationId = cancellationId;
     }
 
     public void cancelReservation(UUID patientId) {

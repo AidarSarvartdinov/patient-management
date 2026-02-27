@@ -10,7 +10,7 @@ import com.stripe.param.checkout.SessionCreateParams;
 
 @Component
 public class StripeClient {
-    public StripeSessionResult creteCheckoutSession(Payment payment) throws StripeException {
+    public StripeSessionResult createCheckoutSession(Payment payment) throws StripeException {
         SessionCreateParams params = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
                 .setSuccessUrl("http://example.com/success")
