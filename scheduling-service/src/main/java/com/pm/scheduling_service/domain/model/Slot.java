@@ -1,6 +1,7 @@
 package com.pm.scheduling_service.domain.model;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 import com.pm.scheduling_service.domain.enums.SlotStatus;
@@ -58,6 +59,7 @@ public class Slot {
     @Positive
     @NotNull
     private long price = 1;
+
     private String currency = "USD";
 
     @Version
@@ -69,6 +71,9 @@ public class Slot {
         }
         if (!(startTime.isBefore(endTime))) {
             throw new IllegalArgumentException("startTime must be before endTime");
+        }
+        if (ChronoUnit.MINUTES.between(startTime, endTime) < 5) {
+            throw new IllegalArgumentException("Time range must be at least 5 minutes");
         }
         if (price <= 0) {
             throw new IllegalArgumentException("price must be positive");
