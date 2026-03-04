@@ -17,6 +17,13 @@ spring:
                   predicates:
                     - Path=/stripe/webhook
 
+                - id: scheduling-service-route
+                  uri: http://scheduling-service:4006
+                  predicates:
+                    - Path=/api/scheduling/**
+                  filters:
+                    - StripPrefix=1
+
                 - id: auth-service-route
                   uri: http://auth-service:4005
                   predicates:
@@ -36,12 +43,25 @@ spring:
                   uri: http://patient-service:4000
                   predicates:
                     - Path=/api-docs/patients
+                    - Path=/api-dcos/patients/swagger-ui
                   filters:
                     - RewritePath=/api-docs/patients,/v3/api-docs
+                    - RewritePath=/api-docs/patients/swagger-ui,/swagger-ui.html
 
                 - id: api-docs-auth-route
                   uri: http://auth-service:4005
                   predicates:
                     - Path=/api-docs/auth
+                    - Path=/api-docs/auth/swagger-ui
                   filters:
                     - RewritePath=/api-docs/auth,/v3/api-docs
+                    - RewritePath=/api-docs/auth/swagger-ui,/swagger-ui.html
+
+                - id: api-docs-scheduling-route
+                  uri: http://scheduling-service:4006
+                  predicates:
+                    - Path=/api-docs/scheduling
+                    - Path=/api-docs/scheduling/swagger-ui
+                  filters:
+                    - RewritePath=/api-docs/scheduling,/v3/api-docs
+                    - RewritePath=/api-docs/scheduling/swagger-ui,/swagger-ui.html
