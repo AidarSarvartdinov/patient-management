@@ -20,7 +20,7 @@ spring:
                 - id: scheduling-service-route
                   uri: http://scheduling-service:4006
                   predicates:
-                    - Path=/api/scheduling/**
+                    - Path=/api/slots/**
                   filters:
                     - StripPrefix=1
 

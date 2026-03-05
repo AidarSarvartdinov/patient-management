@@ -21,7 +21,7 @@ public class StripeClient {
                                 1L)
                         .setPriceData(
                                 SessionCreateParams.LineItem.PriceData.builder().setCurrency(payment.getCurrency())
-                                        .setUnitAmount(payment.getAmount())
+                                        .setUnitAmount(payment.getAmount() * 100) // Stripe unit is cents
                                         .setProductData(SessionCreateParams.LineItem.PriceData.ProductData.builder()
                                                 .setName("Test Payment").build())
                                         .build())

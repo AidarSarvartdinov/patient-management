@@ -39,8 +39,8 @@ public class PaymentService {
     public CreatePaymentResponse createPayment(CreatePaymentRequest request) throws StripeException {
         log.info("Received CreatePaymentRequest : userId=" + request.userId() + ", orderId=" + request.orderId());
         Payment payment = paymentRepository
-                .findByUserIdAndOrderIdAndStatus(request.userId(), request.orderId(), PaymentStatus.NEW)
-                .orElse(createNewPayment(request));
+                .findByUserIdAndOrderIdAndStatus(request.userId(), request.orderId(), PaymentStatus.PENDING)
+                .orElseGet(() -> createNewPayment(request));
 
         if (payment.getStripeSessionId() != null) {
             return new CreatePaymentResponse(payment.getId().toString(), payment.getStripeSessionUrl());

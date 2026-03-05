@@ -69,7 +69,6 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${PATIENT_DB_PASSWORD}
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - BILLING_SERVICE_ADDRESS=billing-service
-      - BILLING_SERVICE_GRPC_PORT=${BILLING_SERVICE_GRPC_PORT}
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
     networks:
       - microservicesNetwork
@@ -114,6 +113,8 @@ services:
       interval: 10s
       timeout: 2s
       retries: 5
+    ports:
+      - "5002:5432"
 
   scheduling-service:
     build: ./scheduling-service

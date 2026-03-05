@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import com.pm.scheduling_service.domain.enums.SlotStatus;
 
 import jakarta.persistence.Column;
@@ -14,8 +16,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Version;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -56,10 +58,11 @@ public class Slot {
     @Column(name = "cancellation_id")
     private UUID cancellationId;
 
-    @Positive
+    @Min(value = 2)
     @NotNull
-    private long price = 1;
+    private long price;
 
+    @ColumnDefault("'USD'")
     private String currency = "USD";
 
     @Version
