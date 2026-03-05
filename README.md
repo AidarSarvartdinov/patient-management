@@ -128,7 +128,7 @@ docker-compose up --build
 | `POST` | `/api/patients` | patient-service | Yes (JWT) |
 | `PUT` | `/api/patients/{id}` | patient-service | Yes (JWT) |
 | `DELETE` | `/api/patients/{id}` | patient-service | Yes (JWT) |
-| `POST` | `/api/slots` | scheduling-service | No |
-| `POST` | `/api/slots/reserve` | scheduling-service | No |
+| `POST` | `/api/slots` | scheduling-service | Yes |
+| `POST` | `/api/slots/reserve` | scheduling-service | Yes |
 | `POST` | `/api/payments` | billing-service | No |
 | `POST` | `/stripe/webhook` | billing-service | No (Stripe signature) |
