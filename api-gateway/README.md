@@ -22,21 +22,6 @@ For example:
 
 It also abstracts the internal network layout, so clients don't need to know the internal Docker container hostnames or ports.
 
-### 2. Global Security Filtering (JWT)
-Instead of implementing JWT validation logic inside every single microservice (which duplicates code and increases coupling), the API Gateway acts as a central security checkpoint.
 
-It uses a custom Spring Cloud Gateway filter: **`JwtValidationGatewayFilterFactory`**.
-- Intercepts requests destined for protected routes (e.g., `/api/patients`).
-- Extracts the `Bearer` token from the `Authorization` header.
-- Makes a synchronous web call (`WebClient`) to the `auth-service`'s `/validate` endpoint.
-- If the token is valid, it forwards the request to the target service.
-- If invalid or missing, it immediately rejects the request with a `401 Unauthorized` status.
-
-### 3. Swagger UI Aggregation
+### 2. Swagger UI Aggregation
 The gateway orchestrates the OpenAPI documentation routes. It rewrites API paths (`/api-docs/*/swagger-ui`) so that developers can access the interactive Swagger documentation for any underlying microservice through a single entry point.
-
-## Configuration
-Requires the internal URL of the authentication service to validate tokens:
-```yaml
-AUTH_SERVICE_URL=http://auth-service:port
-```

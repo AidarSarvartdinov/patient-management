@@ -21,15 +21,13 @@ In a microservices architecture, managing sessions globally is complex. This ser
 - Generates a signed **JWT (JSON Web Token)** containing user claims.
 - Returns the token to the client.
 
-### 2. Token Validation (`/validate`)
-Provides an internal endpoint used primarily by the **API Gateway**.
-- Parses the incoming `Bearer` token.
-- Cryptographically verifies the signature using a shared `JWT_SECRET`.
-- Validates the token's expiration date.
-- Returns `200 OK` if valid, or `401 Unauthorized` if invalid/expired.
+### 2. Registration (`/register`)
+- Creates a new user with provided credentials and PATIENT role.
+- Generates a signed **JWT (JSON Web Token)** containing user claims.
+- Returns the token to the client.
 
 ### 3. Test Credentials
-User registration is currently not supported. To test the API, you can use the following pre-configured test user:
+You can use the following pre-configured test user with ADMIN role:
 
 - **Email**: `testuser@test.com`
 - **Password**: `password123`
@@ -39,14 +37,8 @@ User registration is currently not supported. To test the API, you can use the f
 | Method | Path | Description | Access |
 |---|---|---|---|
 | `POST` | `/login` | Authenticate user and receive JWT | Public |
-| `GET` | `/validate` | Verify the validity of a JWT | Internal (Gateway) |
+| `POST` | `/register` | Creates a new user and receive JWT | Public |
+| `GET` | `/.well-known/jwks.json` | Provides a public RSA key | Internal
 
 *(Detailed API documentation is available via Swagger UI at `/swagger-ui.html` or `/api-docs/auth/swagger-ui` through the Gateway)*
 
-## Configuration
-
-Requires the following environment variables to run securely:
-
-```yaml
-JWT_SECRET=your_base64_encoded_secret_key
-```
