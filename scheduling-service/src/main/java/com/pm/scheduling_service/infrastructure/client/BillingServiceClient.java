@@ -7,11 +7,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
+import com.pm.scheduling_service.domain.exception.PaymentInitiationFailedException;
 import com.pm.scheduling_service.domain.port.PaymentGateway;
 import com.pm.scheduling_service.infrastructure.client.dto.CreatePaymentRequest;
 import com.pm.scheduling_service.infrastructure.client.dto.CreatePaymentResponse;
+import com.pm.scheduling_service.infrastructure.exception.PaymentServiceUnavailableException;
 import com.pm.scheduling_service.infrastructure.security.JwtProvider;
 
 import lombok.extern.slf4j.Slf4j;
@@ -31,15 +35,26 @@ public class BillingServiceClient implements PaymentGateway {
     @Override
     public String initiatePayment(UUID patientId, UUID slotId, long price, String currency) {
         log.info("Initiating payment with patientId: {}, slotId: {}", patientId, slotId);
-        ResponseEntity<CreatePaymentResponse> responseEntity = restClient.post()
-                .uri("/payments").contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtProvider.getTokenString())
-                .body(new CreatePaymentRequest(patientId, slotId, price, currency)).retrieve()
-                .toEntity(CreatePaymentResponse.class);
 
-        // TODO: retry if bad response
-        CreatePaymentResponse response = responseEntity.getBody();
-        return response.sessionUrl();
+        try {
+            ResponseEntity<CreatePaymentResponse> responseEntity = restClient.post()
+                    .uri("/payments").contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtProvider.getTokenString())
+                    .body(new CreatePaymentRequest(patientId, slotId, price, currency)).retrieve()
+                    .toEntity(CreatePaymentResponse.class);
+
+            // TODO: retry if bad response
+            CreatePaymentResponse response = responseEntity.getBody();
+            return response.sessionUrl();
+        } catch (RestClientException e) {
+            if (e instanceof HttpClientErrorException clientError && clientError.getStatusCode().is4xxClientError()) {
+                throw new PaymentInitiationFailedException(
+                        "Payment initiation failed for patient: " + patientId + ", slot: " + slotId + ". "
+                                + clientError.getResponseBodyAsString());
+            }
+
+            throw new PaymentServiceUnavailableException("Billing service is unavailable: " + e.getMessage());
+        }
     }
 
 }
