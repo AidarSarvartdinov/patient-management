@@ -13,8 +13,6 @@ services:
       
       - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
       - SPRING_JPA_SHOW_SQL=true
-
-      - JWT_SECRET=${JWT_SECRET}
     networks:
       - microservicesNetwork
     depends_on:
@@ -168,13 +166,13 @@ services:
     container_name: api-gateway-container
     ports:
       - "4004:4004"
-    environment:
-      - AUTH_SERVICE_URL=http://auth-service:4005
     networks:
       - microservicesNetwork
     depends_on:
       - patient-service
       - auth-service
+      - scheduling-service
+      - billing-service
 
   kafka:
     image: bitnamilegacy/kafka:latest

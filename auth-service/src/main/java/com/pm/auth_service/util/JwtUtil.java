@@ -1,50 +1,43 @@
 package com.pm.auth_service.util;
 
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
-import java.util.Base64;
-import java.util.Date;
+import java.time.Duration;
+import java.time.Instant;
 
-import javax.crypto.SecretKey;
-
-import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jwt.JwtEncodingException;
 import org.springframework.stereotype.Component;
 
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SignatureException;
 
 @Component
 public class JwtUtil {
-    private final Key secretKey;
 
-    public JwtUtil(@Value("${jwt.secret}") String secret) {
-        byte[] bytes = Base64.getDecoder().decode(secret.getBytes(StandardCharsets.UTF_8));
-        this.secretKey = Keys.hmacShaKeyFor(bytes);
+    private final JwtEncoder jwtEncoder;
+    private static final Logger log = LoggerFactory.getLogger(JwtUtil.class);
+
+    public JwtUtil(JwtEncoder jwtEncoder) {
+        this.jwtEncoder = jwtEncoder;
     }
 
-    public String generateToken(String email, String role) {
-        return Jwts.builder()
+    public String generateToken(Authentication auth) throws JwtEncodingException {
+        String email = auth.getName();
+        String role = auth.getAuthorities().iterator().next().getAuthority();
+        Instant now = Instant.now();
+
+        log.info("Generating token for user with email: " + email + " and role: " + role);
+
+        JwtClaimsSet claimsSet = JwtClaimsSet.builder()
                 .subject(email)
                 .claim("role", role)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
-                .signWith(secretKey)
-                .compact();
+                .issuer("http://auth-service:4005")
+                .issuedAt(now)
+                .expiresAt(now.plus(Duration.ofMinutes(15)))
+                .build();
 
+        return jwtEncoder.encode(JwtEncoderParameters.from(claimsSet)).getTokenValue();
     }
-
-    public void validateToken(String token) {
-        try {
-            Jwts.parser().verifyWith((SecretKey) secretKey)
-                    .build()
-                    .parseSignedClaims(token);
-        } catch (SignatureException e) {
-            throw new JwtException("Invalid JWT signature");
-        } catch (JwtException e) {
-            throw new JwtException("Invalid JWT");
-        }
-    }
-
 }

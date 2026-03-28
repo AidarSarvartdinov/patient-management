@@ -7,3 +7,9 @@ spring:
 
 server:
     port: 4005
+
+logging: 
+    level: 
+        org:
+            springframework: 
+                security: DEBUG

@@ -22,6 +22,7 @@ import com.pm.patient_service.service.PatientService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.groups.Default;
 
 @RestController
@@ -36,6 +37,7 @@ public class PatientController {
 
     @GetMapping
     @Operation(summary = "Get Patients")
+    @RolesAllowed("ADMIN")
     public ResponseEntity<List<PatientResponseDTO>> getPatients() {
         List<PatientResponseDTO> patients = patientService.getPatients();
         return ResponseEntity.ok().body(patients);
@@ -43,6 +45,7 @@ public class PatientController {
 
     @PostMapping
     @Operation(summary = "Create a new Patient")
+    @RolesAllowed({"PATIENT", "ADMIN"})
     public ResponseEntity<PatientResponseDTO> createPatient(@Validated({ Default.class,
             CreatePatientValidationGroup.class }) @RequestBody PatientRequestDTO patientRequestDTO) {
         PatientResponseDTO patientResponseDTO = patientService.createPatient(patientRequestDTO);
@@ -50,6 +53,7 @@ public class PatientController {
     }
 
     @PutMapping("/{id}")
+    @RolesAllowed({"PATIENT", "ADMIN"})
     @Operation(summary = "Update a Patient")
     public ResponseEntity<PatientResponseDTO> updatePatient(@PathVariable UUID id,
             @Validated({ Default.class }) @RequestBody PatientRequestDTO patientRequestDTO) {
@@ -59,6 +63,7 @@ public class PatientController {
     }
 
     @DeleteMapping("/{id}")
+    @RolesAllowed("ADMIN")
     @Operation(summary = "Delete a Patient")
     public ResponseEntity<Void> deletePatient(@PathVariable UUID id) {
         patientService.deletePatient(id);

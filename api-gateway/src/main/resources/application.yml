@@ -1,6 +1,8 @@
 server:
     port: 4004
 
+jwkSetUri: http://auth-service:4005/.well-known/jwks.json
+
 spring:
     cloud:
         gateway:
@@ -23,7 +25,6 @@ spring:
                     - Path=/api/slots/**
                   filters:
                     - StripPrefix=1
-                    - JwtValidation
 
                 - id: auth-service-route
                   uri: http://auth-service:4005
@@ -38,7 +39,6 @@ spring:
                     - Path=/api/patients/**
                   filters:
                     - StripPrefix=1
-                    - JwtValidation
 
                 - id: api-docs-patient-route
                   uri: http://patient-service:4000

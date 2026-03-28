@@ -1,44 +1,45 @@
 package com.pm.auth_service.service;
 
-import java.util.Optional;
-
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import com.pm.auth_service.dto.LoginRequestDTO;
 import com.pm.auth_service.util.JwtUtil;
 
-import io.jsonwebtoken.JwtException;
-
 @Service
 public class AuthService {
     private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
-    public AuthService(UserService userService, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+    public AuthService(UserService userService, AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
         this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.authenticationManager = authenticationManager;
     }
 
-    public Optional<String> authenticate(LoginRequestDTO loginRequestDTO) {
-        Optional<String> token = userService.findByEmail(loginRequestDTO.getEmail())
-                .filter(u -> passwordEncoder.matches(loginRequestDTO.getPassword(), u.getPassword()))
-                .map(u -> jwtUtil.generateToken(u.getEmail(), u.getRole()));
+    public String authenticate(LoginRequestDTO loginRequestDTO) {
+        log.info("Authenticating user with email: " + loginRequestDTO.getEmail());
+        
+        Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequestDTO.getEmail(), loginRequestDTO.getPassword()));
+
+        
+        String token = jwtUtil.generateToken(auth);
 
         return token;
     }
 
-    public boolean validateToken(String token) {
-        try {
-            jwtUtil.validateToken(token);
-            return true;
-        } catch (JwtException e) {
-            return false;
-        }
+    public String register(LoginRequestDTO loginRequestDTO, String role) {
+        userService.createUser(loginRequestDTO.getEmail(), loginRequestDTO.getPassword(), role);
+
+        String token = authenticate(loginRequestDTO);
+
+        return token;
     }
-
-    
-
 }

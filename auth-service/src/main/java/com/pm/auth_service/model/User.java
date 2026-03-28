@@ -25,12 +25,16 @@ public class User {
     @Column(nullable = false)
     private String role;
 
-    public UUID getId() {
-        return id;
+    public User() {}
+
+    public User(String email, String password, String role) {
+        this.email = email;
+        this.password = password;
+        this.role = role;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
+    public UUID getId() {
+        return id;
     }
 
     public String getEmail() {
