@@ -13,6 +13,7 @@ import com.pm.scheduling_service.domain.service.SlotService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 
 @RestController
@@ -27,6 +28,7 @@ public class SlotController {
 
     @PostMapping
     @Operation(summary = "Creates a new time slot for doctor")
+    @RolesAllowed("ADMIN")
     public ResponseEntity<Void> createSlot(@Valid @RequestBody CreateSlotRequest request) {
         slotService.createSlot(request.doctorId(), request.startTime(), request.endTime(), request.price());
         return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -34,6 +36,7 @@ public class SlotController {
 
     @PostMapping("/reserve")
     @Operation(summary = "Reserve a slot for patient")
+    @RolesAllowed("PATIENT")
     public ResponseEntity<String> reserveSlot(@RequestBody ReserveSlotRequest request) {
         String sessionUrl = slotService.reserveSlot(request.slotId(), request.patientId());
         return ResponseEntity.ok(sessionUrl);
