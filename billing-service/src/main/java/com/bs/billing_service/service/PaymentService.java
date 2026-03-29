@@ -75,9 +75,10 @@ public class PaymentService {
     }
 
     @Transactional
-    public void handleSuccess(UUID paymentId) {
+    public Payment handleSuccess(UUID paymentId) {
         Payment payment = paymentRepository.findById(paymentId).orElseThrow();
         payment.markPaid();
+        return paymentRepository.save(payment);
     }
 
     @Transactional

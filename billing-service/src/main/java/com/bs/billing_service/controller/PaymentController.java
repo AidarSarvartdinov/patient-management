@@ -9,6 +9,7 @@ import com.stripe.exception.StripeException;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.security.RolesAllowed;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +28,7 @@ public class PaymentController {
 
     @PostMapping
     @Operation(summary = "Creates a new payment")
+    @RolesAllowed("PATIENT")
     public ResponseEntity<CreatePaymentResponse> createPayment(@RequestBody CreatePaymentRequest request)
             throws StripeException {
         CreatePaymentResponse response = paymentService.createPayment(request);

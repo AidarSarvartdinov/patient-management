@@ -1,4 +1,4 @@
-package com.pm.scheduling_service.infrastructure.security;
+package com.bs.billing_service.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -12,10 +12,13 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.bs.billing_service.security.RoleJwtGrantedAuthoritesConverter;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(jsr250Enabled = true)
 public class SecurityConfig {
+
     @Value("${jwkSetUri}")
     private String jwkSetUri;
 
@@ -23,9 +26,11 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
             Converter<Jwt, ? extends AbstractAuthenticationToken> jwtAuthenticationConverter) throws Exception {
                 
-        http.authorizeHttpRequests(c -> c.anyRequest().authenticated())
-                .oauth2ResourceServer(c -> c
-                        .jwt(jwt -> jwt.jwkSetUri(jwkSetUri).jwtAuthenticationConverter(jwtAuthenticationConverter)));
+        http.authorizeHttpRequests(c -> c.requestMatchers("/stripe/webhook/**").permitAll()
+                .anyRequest().authenticated());
+
+        http.oauth2ResourceServer(
+                c -> c.jwt(jwt -> jwt.jwkSetUri(jwkSetUri).jwtAuthenticationConverter(jwtAuthenticationConverter)));
 
         return http.build();
     }
