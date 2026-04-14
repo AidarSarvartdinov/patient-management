@@ -31,4 +31,10 @@ public class SlotTransactionalOperations {
         Slot slot = slotRepository.findById(slotId).orElseThrow(() -> new EntityNotFoundException("Slot not found"));
         slot.cancelReservation(patientId);
     }
+
+    @Transactional
+    public void confirmBooking(UUID slotId, UUID patientId) {
+        Slot slot = slotRepository.findById(slotId).orElseThrow(() -> new EntityNotFoundException("Slot not found"));
+        slot.confirmBooking(LocalDateTime.now(), patientId);
+    }
 }

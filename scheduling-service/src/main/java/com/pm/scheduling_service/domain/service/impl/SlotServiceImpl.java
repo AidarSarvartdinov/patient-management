@@ -47,7 +47,15 @@ public class SlotServiceImpl implements SlotService {
             return sessionUrl;
         } catch (Exception e) {
             slotTransactionalOperations.cancelReservation(slotId, patientId);
+
+            // processing in the GlobalExceptionHandler
             throw e;
         }
+    }
+
+    public void confirmSlotByPayment(UUID slotId, UUID patientId) {
+        log.info("Confirming booking slot {} for paitent {}", slotId, patientId);
+        // TODO: handle transaction failure
+        slotTransactionalOperations.confirmBooking(slotId, patientId);
     }
 }

@@ -3,6 +3,8 @@ package com.bs.billing_service.service;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,7 @@ import com.stripe.net.Webhook;
 public class StripeWebhookService {
     private final String webhookSecret;
     private final PaymentService paymentService;
+    private static final Logger log = LoggerFactory.getLogger(StripeWebhookService.class);
 
     public StripeWebhookService(@Value("${STRIPE_WEBHOOK_SECRET}") String webhookSecret, PaymentService paymentService) {
         this.webhookSecret = webhookSecret;
@@ -33,6 +36,8 @@ public class StripeWebhookService {
                 && !"payment_intent.payment_failed".equals(event.getType())) {
             return;
         }
+
+        log.info("Got Stripe event {}", event.getType());
 
         Session session = extractSession(event);
 

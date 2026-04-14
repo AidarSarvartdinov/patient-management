@@ -124,6 +124,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${SCHEDULING_DB_PASSWORD}
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - BILLING_SERVICE_URL=http://billing-service:4001
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
     depends_on:
       scheduling-db:
         condition: service_healthy

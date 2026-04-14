@@ -17,6 +17,7 @@ import com.bs.billing_service.dto.CreatePaymentResponse;
 import com.bs.billing_service.dto.StripeSessionResult;
 import com.bs.billing_service.enums.PaymentFailureReason;
 import com.bs.billing_service.enums.PaymentStatus;
+import com.bs.billing_service.kafka.KafkaProducer;
 import com.bs.billing_service.model.Payment;
 import com.bs.billing_service.repository.PaymentRepository;
 import com.bs.billing_service.util.StripeClient;
@@ -29,11 +30,13 @@ import jakarta.persistence.EntityNotFoundException;
 public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final StripeClient stripeClient;
+    private final KafkaProducer kafkaProducer;
     private static final Logger log = LoggerFactory.getLogger(PaymentService.class);
 
-    public PaymentService(PaymentRepository paymentRepository, StripeClient stripeClient) {
+    public PaymentService(PaymentRepository paymentRepository, StripeClient stripeClient, KafkaProducer kafkaProducer) {
         this.paymentRepository = paymentRepository;
         this.stripeClient = stripeClient;
+        this.kafkaProducer = kafkaProducer;
     }
 
     public CreatePaymentResponse createPayment(CreatePaymentRequest request) throws StripeException {
@@ -46,6 +49,7 @@ public class PaymentService {
             return new CreatePaymentResponse(payment.getId().toString(), payment.getStripeSessionUrl());
         }
 
+        log.info("Creating Stripe session for payment {}", payment.getId());
         StripeSessionResult session = stripeClient.createCheckoutSession(payment);
         payment = markPending(payment.getId(), session);
 
@@ -60,7 +64,11 @@ public class PaymentService {
 
     public void processStripeEvent(String eventType, UUID paymentId) {
         switch (eventType) {
-            case "checkout.session.completed" -> handleSuccess(paymentId);
+            case "checkout.session.completed" -> { 
+                log.info("Handling payment success");
+                Payment payment = handleSuccess(paymentId);
+                kafkaProducer.sendPaymentSuccessEvent(payment.getUserId(), payment.getOrderId());
+            }
             case "payment_intent.payment_failed" -> handleFailure(paymentId);
             case "checkout.session.expired" -> handleExpired(paymentId);
         }
@@ -71,7 +79,7 @@ public class PaymentService {
         Optional<Payment> optionalPayment = paymentRepository.findById(paymentId);
         Payment payment = optionalPayment.orElseThrow(() -> new EntityNotFoundException("Payment not found"));
         payment.markPending(session.id(), session.url());
-        return payment;
+        return paymentRepository.save(payment);
     }
 
     @Transactional

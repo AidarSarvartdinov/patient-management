@@ -101,10 +101,11 @@ public class SlotTest {
 
     @Test
     public void shouldConfirmBooking_whenSlotIsReserved() {
-        slot.reserve(UUID.randomUUID(), LocalDateTime.now());
+        UUID patientId = UUID.randomUUID();
+        slot.reserve(patientId, LocalDateTime.now());
         LocalDateTime now = LocalDateTime.now();
 
-        slot.confirmBooking(now);
+        slot.confirmBooking(now, patientId);
 
         assertEquals(SlotStatus.CONFIRMED, slot.getSlotStatus());
         assertEquals(now, slot.getBookedAt());
@@ -112,7 +113,7 @@ public class SlotTest {
 
     @Test
     public void shouldNotAllowConfirmation_whenSlotIsNotReserved() {
-        assertThrows(IllegalStateException.class, () -> slot.confirmBooking(LocalDateTime.now()));
+        assertThrows(IllegalStateException.class, () -> slot.confirmBooking(LocalDateTime.now(), UUID.randomUUID()));
     }
 
     // ===========================
@@ -159,7 +160,7 @@ public class SlotTest {
         UUID cancellationId = UUID.randomUUID();
 
         testSlot.reserve(patientId, now);
-        testSlot.confirmBooking(now);
+        testSlot.confirmBooking(now, patientId);
 
         testSlot.cancelAppointment(now, cancellationId);
 
@@ -179,7 +180,7 @@ public class SlotTest {
         UUID cancellationId = UUID.randomUUID();
 
         slot.reserve(patientId, LocalDateTime.now());
-        slot.confirmBooking(LocalDateTime.now());
+        slot.confirmBooking(LocalDateTime.now(), patientId);
 
         assertThrows(IllegalStateException.class,
                 () -> slot.cancelAppointment(LocalDateTime.now(), cancellationId));
@@ -201,7 +202,7 @@ public class SlotTest {
         LocalDateTime startTime = slot.getStartTime();
 
         slot.reserve(patientId, startTime.minusDays(4));
-        slot.confirmBooking(startTime.minusDays(3));
+        slot.confirmBooking(startTime.minusDays(3), patientId);
         slot.cancelAppointment(startTime.minusDays(2), cancellationId);
 
         assertThrows(IllegalStateException.class, () -> slot.release(UUID.randomUUID()));
@@ -222,7 +223,7 @@ public class SlotTest {
         assertEquals(SlotStatus.RESERVED, slot.getSlotStatus());
 
         // Confirm
-        slot.confirmBooking(startTime.minusDays(3));
+        slot.confirmBooking(startTime.minusDays(3), patientId);
         assertEquals(SlotStatus.CONFIRMED, slot.getSlotStatus());
 
         // Cancel Appointment

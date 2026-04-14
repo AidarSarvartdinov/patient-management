@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-import payment.events.PaymentSuccessEvent;
+import payment.events.PaymentEvent;
 
 @Component
 public class KafkaProducer {
@@ -19,14 +19,14 @@ public class KafkaProducer {
     }
 
     public void sendPaymentSuccessEvent(UUID userId, UUID orderId) {
-        PaymentSuccessEvent event = PaymentSuccessEvent.newBuilder()
+        PaymentEvent event = PaymentEvent.newBuilder()
                 .setUserId(userId.toString())
                 .setOrderId(orderId.toString())
                 .setEventType("PAYMENT_SUCCESS")
                 .build();
 
         try {
-            template.send("payment", event.toByteArray());
+            template.send("payment", orderId.toString(), event.toByteArray());
         } catch (Exception e) {
             log.error("Error sending PaymentSuccess event: " + event, e);
         }

@@ -88,7 +88,7 @@ public class Slot {
         this.price = price;
     }
 
-    public void confirmBooking(LocalDateTime now) {
+    public void confirmBooking(LocalDateTime now, UUID patientId) {
         if (startTime.isBefore(now)) {
             throw new IllegalStateException("Cannot book past slot");
         }
@@ -98,8 +98,12 @@ public class Slot {
                     "Cannot book slot with appointment status: " + slotStatus.toString());
         }
 
-        if (patientId == null) {
+        if (this.patientId == null) {
             throw new IllegalStateException("Cannot book slot without patient");
+        }
+
+        if (!this.patientId.equals(patientId)) {
+            throw new IllegalArgumentException("The slot " + id + " is not reserved by patient " + patientId);
         }
 
         this.slotStatus = SlotStatus.CONFIRMED;
