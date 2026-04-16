@@ -7,6 +7,6 @@ import com.pm.scheduling_service.domain.model.Slot;
 
 public interface SlotService {
     Slot createSlot(UUID doctorId, LocalDateTime startTime, LocalDateTime endTime, long price);
-    String reserveSlot(UUID slotId, UUID patientId);
+    void reserveSlot(UUID slotId, UUID patientId);
     void confirmSlotByPayment(UUID slotId, UUID patientId);
 }

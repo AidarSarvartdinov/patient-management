@@ -39,18 +39,18 @@ public class SlotServiceImpl implements SlotService {
         return slotRepository.save(slot);
     }
 
-    public String reserveSlot(UUID slotId, UUID patientId) {
+    public void reserveSlot(UUID slotId, UUID patientId) {
         log.info("Reserving slot {} for patient: {}", slotId, patientId);
-        Slot slot = slotTransactionalOperations.reserve(slotId, patientId);
-        try {
-            String sessionUrl = paymentGateway.initiatePayment(patientId, slotId, slot.getPrice(), slot.getCurrency());
-            return sessionUrl;
-        } catch (Exception e) {
-            slotTransactionalOperations.cancelReservation(slotId, patientId);
+        slotTransactionalOperations.reserve(slotId, patientId);
+        // try {
+        //     String sessionUrl = paymentGateway.initiatePayment(patientId, slotId, slot.getPrice(), slot.getCurrency());
+        //     return sessionUrl;
+        // } catch (Exception e) {
+        //     slotTransactionalOperations.cancelReservation(slotId, patientId);
 
-            // processing in the GlobalExceptionHandler
-            throw e;
-        }
+        //     // processing in the GlobalExceptionHandler
+        //     throw e;
+        // }
     }
 
     public void confirmSlotByPayment(UUID slotId, UUID patientId) {

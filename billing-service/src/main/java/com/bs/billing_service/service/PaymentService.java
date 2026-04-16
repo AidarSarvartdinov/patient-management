@@ -17,26 +17,29 @@ import com.bs.billing_service.dto.CreatePaymentResponse;
 import com.bs.billing_service.dto.StripeSessionResult;
 import com.bs.billing_service.enums.PaymentFailureReason;
 import com.bs.billing_service.enums.PaymentStatus;
-import com.bs.billing_service.kafka.KafkaProducer;
+import com.bs.billing_service.model.Outbox;
 import com.bs.billing_service.model.Payment;
+import com.bs.billing_service.repository.OutboxRepository;
 import com.bs.billing_service.repository.PaymentRepository;
 import com.bs.billing_service.util.StripeClient;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 
 import jakarta.persistence.EntityNotFoundException;
+import payment.events.PaymentEvent;
 
 @Service
 public class PaymentService {
     private final PaymentRepository paymentRepository;
+    private final OutboxRepository outboxRepository;
     private final StripeClient stripeClient;
-    private final KafkaProducer kafkaProducer;
     private static final Logger log = LoggerFactory.getLogger(PaymentService.class);
 
-    public PaymentService(PaymentRepository paymentRepository, StripeClient stripeClient, KafkaProducer kafkaProducer) {
+    public PaymentService(PaymentRepository paymentRepository, OutboxRepository outboxRepository,
+            StripeClient stripeClient) {
         this.paymentRepository = paymentRepository;
+        this.outboxRepository = outboxRepository;
         this.stripeClient = stripeClient;
-        this.kafkaProducer = kafkaProducer;
     }
 
     public CreatePaymentResponse createPayment(CreatePaymentRequest request) throws StripeException {
@@ -64,11 +67,7 @@ public class PaymentService {
 
     public void processStripeEvent(String eventType, UUID paymentId) {
         switch (eventType) {
-            case "checkout.session.completed" -> { 
-                log.info("Handling payment success");
-                Payment payment = handleSuccess(paymentId);
-                kafkaProducer.sendPaymentSuccessEvent(payment.getUserId(), payment.getOrderId());
-            }
+            case "checkout.session.completed" -> handleSuccess(paymentId);
             case "payment_intent.payment_failed" -> handleFailure(paymentId);
             case "checkout.session.expired" -> handleExpired(paymentId);
         }
@@ -84,9 +83,26 @@ public class PaymentService {
 
     @Transactional
     public Payment handleSuccess(UUID paymentId) {
+        log.info("Handling payment success");
         Payment payment = paymentRepository.findById(paymentId).orElseThrow();
         payment.markPaid();
-        return paymentRepository.save(payment);
+        payment = paymentRepository.save(payment);
+
+        try {
+            PaymentEvent paymentEvent = PaymentEvent.newBuilder()
+                    .setUserId(payment.getUserId().toString())
+                    .setOrderId(payment.getOrderId().toString())
+                    .setPaymentId(payment.getId().toString())
+                    .setEventType("PAYMENT_SUCCESS")
+                    .build();
+
+            outboxRepository.save(new Outbox("payments", payment.getOrderId().toString(), paymentEvent.toByteArray()));
+        } catch (Exception e) {
+            log.error("Failed to serialize outbox payload", e);
+            throw new RuntimeException("Serialization error during outbox write", e);
+        }
+
+        return payment;
     }
 
     @Transactional
@@ -100,7 +116,6 @@ public class PaymentService {
         Payment payment = paymentRepository.findById(paymentId).orElseThrow();
         payment.markFailed(PaymentFailureReason.SESSION_EXPIRED);
     }
-
 
     @Scheduled(fixedRate = 15, timeUnit = TimeUnit.MINUTES)
     public void synchronizePaymentStatus() {
