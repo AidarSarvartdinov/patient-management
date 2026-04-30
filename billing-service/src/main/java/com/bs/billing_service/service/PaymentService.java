@@ -94,6 +94,7 @@ public class PaymentService {
                     .setOrderId(payment.getOrderId().toString())
                     .setPaymentId(payment.getId().toString())
                     .setEventType("PAYMENT_SUCCESS")
+                    .setEventId(UUID.randomUUID().toString())
                     .build();
 
             outboxRepository.save(new Outbox("payments", payment.getOrderId().toString(), paymentEvent.toByteArray()));

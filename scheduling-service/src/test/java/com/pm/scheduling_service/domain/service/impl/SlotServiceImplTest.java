@@ -21,15 +21,11 @@ import com.pm.scheduling_service.domain.exception.ConflictSlotsException;
 import com.pm.scheduling_service.domain.model.Slot;
 import com.pm.scheduling_service.domain.port.PaymentGateway;
 import com.pm.scheduling_service.domain.port.SlotRepository;
-import com.pm.scheduling_service.infrastructure.persistence.SlotTransactionalOperations;
 
 @ExtendWith(MockitoExtension.class)
 public class SlotServiceImplTest {
     @Mock
     private SlotRepository slotRepository;
-
-    @Mock
-    private SlotTransactionalOperations slotTransactionalOperations;
 
     @Mock
     private PaymentGateway paymentGateway;
@@ -74,51 +70,6 @@ public class SlotServiceImplTest {
 
         // slot with conflicts never saved
         verify(slotRepository, never()).save(any(Slot.class));
-    }
-
-    @Test
-    void shouldReserveSlotAndReturnPaymentUrl_whenSuccessful() {
-        UUID slotId = UUID.randomUUID();
-        UUID patientId = UUID.randomUUID();
-        String expectedUrl = "https://stripe.com/pay/1";
-
-        Slot fakeSlot = new Slot(
-                UUID.randomUUID(),
-                LocalDateTime.now().plusHours(1),
-                LocalDateTime.now().plusHours(2),
-                10);
-
-        when(slotTransactionalOperations.reserve(slotId, patientId)).thenReturn(fakeSlot);
-
-        when(paymentGateway.initiatePayment(patientId, slotId, fakeSlot.getPrice(), fakeSlot.getCurrency()))
-                .thenReturn(expectedUrl);
-
-        String actualUrl = slotService.reserveSlot(slotId, patientId);
-
-        assertEquals(expectedUrl, actualUrl);
-
-        verify(slotTransactionalOperations, never()).cancelReservation(any(), any());
-    }
-
-    @Test
-    void shouldNotReserve_whenPaymentInitiationFailed() {
-        UUID slotId = UUID.randomUUID();
-        UUID patientId = UUID.randomUUID();
-        Slot fakeSlot = new Slot(
-                UUID.randomUUID(),
-                LocalDateTime.now().plusHours(1),
-                LocalDateTime.now().plusHours(2),
-                10);
-
-        when(slotTransactionalOperations.reserve(slotId, patientId)).thenReturn(fakeSlot);
-
-        when(paymentGateway.initiatePayment(patientId, slotId, fakeSlot.getPrice(), fakeSlot.getCurrency()))
-                .thenThrow(RuntimeException.class);
-
-        assertThrows(RuntimeException.class, () -> slotService.reserveSlot(slotId, patientId));
-        // assertEquals("Payment failed", exception.getMessage());
-
-        verify(slotTransactionalOperations).cancelReservation(slotId, patientId);
     }
 
 }

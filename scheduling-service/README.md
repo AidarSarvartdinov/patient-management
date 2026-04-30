@@ -8,7 +8,6 @@ The main focus was on Domain Driven Design (DDD) and Hexagonal Architecture (Por
 
 - Java 21
 - Spring Boot 3, Spring Data JPA
-- Spring RestClient (for synchronous requests)
 - PostgreSQL
 - maven
 
@@ -29,7 +28,7 @@ The service is divided into layers. The dependencies are directed inside the dom
 
 - domain/ - service core (business logic, models, exceptions).
 - domain/port - contracts for working with infrastructure (e.g PaymentGateway).
-- infrastructure - ports implementations for working with external services (e.g. BillingServiceClient for integration with billing microservice via RestClient).
+- infrastructure - ports implementations for working with external services.
 - api - HTTP controllers and DTO.
 
 
@@ -39,14 +38,6 @@ In pure DDD domain model cannot have external dependencies including JPA annotat
 
 - Avoiding boiler plate: additional model and mapper would increase the code size without any profit for the microservice with such size
 - Dirty Checking and Optimistic Locking support
-
-## Solution of distributed transaction problem
-
-Slot booking requires writing to the database and synchronous HTTP call of Billing Service. Local transactions with compensating action:
-
-1. Transaction: Slot status is set to RESERVED in database.
-2. HTTP call for Billing service out of transaction.
-3. If the call throws an error, compensating transaction cancelReservation is called to free the slot.
 
 
 ## Main Functionalities

@@ -7,4 +7,6 @@ message PaymentEvent {
     string user_id = 1;
     string order_id = 2;
     string event_type = 3;
+    string payment_id = 4;
+    string event_id = 5;
 }

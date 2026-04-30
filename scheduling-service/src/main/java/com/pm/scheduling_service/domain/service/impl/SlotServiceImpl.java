@@ -7,27 +7,22 @@ import org.springframework.stereotype.Service;
 
 import com.pm.scheduling_service.domain.exception.ConflictSlotsException;
 import com.pm.scheduling_service.domain.model.Slot;
-import com.pm.scheduling_service.domain.port.PaymentGateway;
 import com.pm.scheduling_service.domain.port.SlotRepository;
 import com.pm.scheduling_service.domain.service.SlotService;
-import com.pm.scheduling_service.infrastructure.persistence.SlotTransactionalOperations;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
 public class SlotServiceImpl implements SlotService {
     private final SlotRepository slotRepository;
-    private final SlotTransactionalOperations slotTransactionalOperations;
-    private final PaymentGateway paymentGateway;
 
-    public SlotServiceImpl(SlotRepository slotRepository, PaymentGateway paymentGateway,
-            SlotTransactionalOperations slotTransactionalOperations) {
+    public SlotServiceImpl(SlotRepository slotRepository) {
         this.slotRepository = slotRepository;
-        this.slotTransactionalOperations = slotTransactionalOperations;
-        this.paymentGateway = paymentGateway;
     }
 
+    @Override
     public Slot createSlot(UUID doctorId, LocalDateTime startTime, LocalDateTime endTime, long price) {
         log.info("Creating new time slot for doctor: {}, startTime: {}, endTime: {}", doctorId, startTime, endTime);
         if (slotRepository.hasTimeRangeConflictSlots(doctorId, startTime, endTime)) {
@@ -39,23 +34,25 @@ public class SlotServiceImpl implements SlotService {
         return slotRepository.save(slot);
     }
 
-    public void reserveSlot(UUID slotId, UUID patientId) {
+    @Override
+    public Slot reserveSlot(UUID slotId, UUID patientId) {
         log.info("Reserving slot {} for patient: {}", slotId, patientId);
-        slotTransactionalOperations.reserve(slotId, patientId);
-        // try {
-        //     String sessionUrl = paymentGateway.initiatePayment(patientId, slotId, slot.getPrice(), slot.getCurrency());
-        //     return sessionUrl;
-        // } catch (Exception e) {
-        //     slotTransactionalOperations.cancelReservation(slotId, patientId);
-
-        //     // processing in the GlobalExceptionHandler
-        //     throw e;
-        // }
+        Slot slot = slotRepository.findById(slotId).orElseThrow(() -> new EntityNotFoundException("Slot not found"));
+        slot.reserve(patientId, LocalDateTime.now());
+        return slotRepository.save(slot);
     }
 
-    public void confirmSlotByPayment(UUID slotId, UUID patientId) {
-        log.info("Confirming booking slot {} for paitent {}", slotId, patientId);
-        // TODO: handle transaction failure
-        slotTransactionalOperations.confirmBooking(slotId, patientId);
+    @Override
+    public void cancelReservation(UUID slotId, UUID patientId) {
+        Slot slot = slotRepository.findById(slotId).orElseThrow(() -> new EntityNotFoundException("Slot not found"));
+        slot.cancelReservation(patientId);
+        slotRepository.save(slot);
+    }
+
+    @Override
+    public void confirmBooking(UUID slotId, UUID patientId) {
+        Slot slot = slotRepository.findById(slotId).orElseThrow(() -> new EntityNotFoundException("Slot not found"));
+        slot.confirmBooking(LocalDateTime.now(), patientId);
+        slotRepository.save(slot);
     }
 }
