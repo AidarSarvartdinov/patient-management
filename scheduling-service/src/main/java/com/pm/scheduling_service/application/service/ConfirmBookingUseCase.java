@@ -2,7 +2,7 @@ package com.pm.scheduling_service.application.service;
 
 import java.util.UUID;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.pm.scheduling_service.domain.service.SlotService;
@@ -11,7 +11,7 @@ import com.pm.scheduling_service.infrastructure.messaging.inbox.InboxRepository;
 
 import lombok.RequiredArgsConstructor;
 
-@Service
+@Component
 @RequiredArgsConstructor
 public class ConfirmBookingUseCase {
     private final SlotService slotService;
