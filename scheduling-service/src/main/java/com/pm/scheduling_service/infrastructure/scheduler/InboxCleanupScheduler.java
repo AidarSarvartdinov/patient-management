@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.pm.scheduling_service.application.service.InboxCleanupUseCase;
+import com.pm.scheduling_service.application.scheduler.InboxCleanupUseCase;
 
 import lombok.RequiredArgsConstructor;
 

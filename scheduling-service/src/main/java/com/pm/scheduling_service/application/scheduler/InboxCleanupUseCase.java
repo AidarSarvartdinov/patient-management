@@ -1,4 +1,4 @@
-package com.pm.scheduling_service.application.service;
+package com.pm.scheduling_service.application.scheduler;
 
 import java.time.LocalDateTime;
 
