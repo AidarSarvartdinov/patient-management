@@ -19,4 +19,9 @@ public class Inbox {
         this.eventId = eventId;
         this.createdAt = LocalDateTime.now();
     }
+
+    public Inbox(UUID eventId, LocalDateTime createdAt) {
+        this.eventId = eventId;
+        this.createdAt = createdAt;
+    }
 }

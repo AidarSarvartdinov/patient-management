@@ -5,8 +5,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.pm.scheduling_service.infrastructure.messaging.inbox.Inbox;
-import com.pm.scheduling_service.infrastructure.messaging.inbox.InboxRepository;
+import com.pm.scheduling_service.application.inbox.ProcessedEvent;
+import com.pm.scheduling_service.application.inbox.ProcessedEventRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -14,17 +14,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ConfirmBookingUseCase {
     private final SlotApplicationService slotApplicationService;
-    private final InboxRepository inboxRepository;
+    private final ProcessedEventRepository processedEventRepository;
 
     @Transactional
     public void execute(UUID slotId, UUID patientId, UUID eventId) {
         // Idempotent check: skip if already processed (race condition guard)
-        if (inboxRepository.existsById(eventId)) {
+        if (processedEventRepository.existsById(eventId)) {
             return;
         }
 
         slotApplicationService.confirmBooking(slotId, patientId);
 
-        inboxRepository.save(new Inbox(eventId));
+        processedEventRepository.save(new ProcessedEvent(eventId));
     }
 }
