@@ -9,28 +9,28 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.pm.scheduling_service.api.dto.CreateSlotRequest;
 import com.pm.scheduling_service.api.dto.ReserveSlotRequest;
-import com.pm.scheduling_service.domain.service.SlotService;
+import com.pm.scheduling_service.application.service.CreateSlotUseCase;
+import com.pm.scheduling_service.application.service.ReserveSlotUseCase;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/slots")
+@RequiredArgsConstructor
 @Tag(name = "Slot", description = "API for managing time slots")
 public class SlotController {
-    private final SlotService slotService;
-
-    public SlotController(SlotService slotService) {
-        this.slotService = slotService;
-    }
+    private final CreateSlotUseCase createSlotUseCase;
+    private final ReserveSlotUseCase reserveSlotUseCase;
 
     @PostMapping
     @Operation(summary = "Creates a new time slot for doctor")
     @RolesAllowed("ADMIN")
     public ResponseEntity<Void> createSlot(@Valid @RequestBody CreateSlotRequest request) {
-        slotService.createSlot(request.doctorId(), request.startTime(), request.endTime(), request.price());
+        createSlotUseCase.execute(request.doctorId(), request.startTime(), request.endTime(), request.price());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -38,7 +38,7 @@ public class SlotController {
     @Operation(summary = "Reserve a slot for patient")
     @RolesAllowed("PATIENT")
     public ResponseEntity<String> reserveSlot(@RequestBody ReserveSlotRequest request) {
-        String sessionUrl = slotService.reserveSlot(request.slotId(), request.patientId());
+        String sessionUrl = reserveSlotUseCase.execute(request.slotId(), request.patientId());
         return ResponseEntity.ok(sessionUrl);
     }
 }

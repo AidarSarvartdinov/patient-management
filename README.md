@@ -33,7 +33,7 @@ graph LR
 | [**api-gateway**](./api-gateway) | Single entry point for all clients. Routes requests and validates JWT signature locally using JWKS | Spring Cloud Gateway |
 | [**auth-service**](./auth-service) | User authentication. Issues JWT tokens signed with RSA private key, provides JWKS endpoint for public key distribution | Spring Security, JWT |
 | [**patient-service**](./patient-service/patient-service) | Full CRUD for patient records. Publishes events to Kafka on changes | Spring Data JPA, Kafka, Protobuf |
-| [**scheduling-service**](./scheduling-service) | Doctor schedule and slot booking with rich domain model and state machine | DDD, Hexagonal Architecture |
+| [**scheduling-service**](./scheduling-service) |  Slot booking with rich domain model and state machine | DDD, Hexagonal Architecture |
 | [**billing-service**](./billing-service) | Payment processing via Stripe Checkout. Handles Stripe webhooks | Stripe API, RestClient |
 | [**analytics-service**](./analytics-service) | Consumes patient events from Kafka for analytics processing | Kafka Consumer, Protobuf |
 
@@ -64,7 +64,7 @@ When a patient record is created or updated, `patient-service` publishes a Proto
 The `scheduling-service` applies **Pragmatic DDD** with **Hexagonal Architecture (Ports and Adapters)**. The `Slot` entity is a rich domain model with an internal state machine (`FREE → RESERVED → CONFIRMED`) that enforces business invariants. External dependencies (billing, persistence) are abstracted behind port interfaces. See [scheduling-service README](./scheduling-service/README.md) for details.
 
 ### Distributed Transaction Handling
-Slot reservation involves both a database write and an HTTP call to the billing service. To avoid long-running database transactions, the system uses **local transactions with a compensating action**: the slot is reserved in a short transaction, then the payment is initiated outside the transaction. If payment fails, a compensating `cancelReservation` transaction rolls back the reservation.
+Transcational Outbox Pattern is used.
 
 ## Getting Started
 
