@@ -37,8 +37,8 @@ public class SlotController {
     @PostMapping("/reserve")
     @Operation(summary = "Reserve a slot for patient")
     @RolesAllowed("PATIENT")
-    public ResponseEntity<Void> reserveSlot(@RequestBody ReserveSlotRequest request) {
-        reserveSlotUseCase.execute(request.slotId(), request.patientId());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<String> reserveSlot(@RequestBody ReserveSlotRequest request) {
+        String sessionUrl = reserveSlotUseCase.execute(request.slotId(), request.patientId());
+        return ResponseEntity.ok(sessionUrl);
     }
 }

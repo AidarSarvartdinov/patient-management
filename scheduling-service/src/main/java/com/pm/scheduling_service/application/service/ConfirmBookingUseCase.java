@@ -5,7 +5,6 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.pm.scheduling_service.domain.service.SlotService;
 import com.pm.scheduling_service.infrastructure.messaging.inbox.Inbox;
 import com.pm.scheduling_service.infrastructure.messaging.inbox.InboxRepository;
 
@@ -14,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class ConfirmBookingUseCase {
-    private final SlotService slotService;
+    private final SlotApplicationService slotApplicationService;
     private final InboxRepository inboxRepository;
 
     @Transactional
@@ -24,7 +23,7 @@ public class ConfirmBookingUseCase {
             return;
         }
 
-        slotService.confirmBooking(slotId, patientId);
+        slotApplicationService.confirmBooking(slotId, patientId);
 
         inboxRepository.save(new Inbox(eventId));
     }

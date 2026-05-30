@@ -1,4 +1,4 @@
-package com.pm.scheduling_service.domain.service.impl;
+package com.application.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -17,13 +17,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.pm.scheduling_service.application.service.SlotApplicationService;
 import com.pm.scheduling_service.domain.exception.ConflictSlotsException;
 import com.pm.scheduling_service.domain.model.Slot;
 import com.pm.scheduling_service.domain.port.PaymentGateway;
 import com.pm.scheduling_service.domain.port.SlotRepository;
 
 @ExtendWith(MockitoExtension.class)
-public class SlotServiceImplTest {
+public class SlotApplicationServiceTest {
     @Mock
     private SlotRepository slotRepository;
 
@@ -31,7 +32,7 @@ public class SlotServiceImplTest {
     private PaymentGateway paymentGateway;
 
     @InjectMocks
-    private SlotServiceImpl slotService;
+    private SlotApplicationService slotService;
 
     @Test
     void shouldCreateAndSaveSlot_whenNoTimeConflicts() {
