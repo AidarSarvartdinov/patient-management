@@ -74,7 +74,6 @@ src/main/java/com/pm/scheduling_service/
  │    ├── exception/               # Domain-specific exceptions
  │    ├── model/                   # Rich Entities / Aggregates
  │    ├── port/                    # Outbound interfaces (repositories, gateway)
- │    ├── service/                 # Domain Services
  └── infrastructure/               # Implementation details (Driving Adapters)
       ├── client/                  # HTTP Clients (e.g., BillingServiceClient)
       ├── messaging/               # Kafka consumer, Inbox entity & repository
