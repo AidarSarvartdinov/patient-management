@@ -17,7 +17,7 @@ graph LR
 
     Scheduling -->|REST| Billing
     Billing <-->|Webhooks| Stripe((Stripe API))
-    Billing --> Protobuf| Kafka{{Kafka}}
+    Billing --> |Protobuf| Kafka{{Kafka}}
     Kafka --> Scheduling
     Patient -->|Protobuf| Kafka{{Kafka}}
     Kafka --> Analytics[Analytics Service]
