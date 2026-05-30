@@ -12,11 +12,13 @@ graph LR
 
     GW -->|/auth/**| Auth[Auth Service]
     GW -->|/api/patients/**| Patient[Patient Service]
-    GW -->|/api/slots/**| Scheduling[Scheduling Service]
     GW -->|/api/payments/**| Billing[Billing Service]
+    GW -->|/api/slots/**| Scheduling[Scheduling Service]   
 
     Scheduling -->|REST| Billing
     Billing <-->|Webhooks| Stripe((Stripe API))
+    Billing --> Protobuf| Kafka{{Kafka}}
+    Kafka --> Scheduling
     Patient -->|Protobuf| Kafka{{Kafka}}
     Kafka --> Analytics[Analytics Service]
 
@@ -33,8 +35,8 @@ graph LR
 | [**api-gateway**](./api-gateway) | Single entry point for all clients. Routes requests and validates JWT signature locally using JWKS | Spring Cloud Gateway |
 | [**auth-service**](./auth-service) | User authentication. Issues JWT tokens signed with RSA private key, provides JWKS endpoint for public key distribution | Spring Security, JWT |
 | [**patient-service**](./patient-service/patient-service) | Full CRUD for patient records. Publishes events to Kafka on changes | Spring Data JPA, Kafka, Protobuf |
-| [**scheduling-service**](./scheduling-service) |  Slot booking with rich domain model and state machine | DDD, Hexagonal Architecture |
-| [**billing-service**](./billing-service) | Payment processing via Stripe Checkout. Handles Stripe webhooks | Stripe API, RestClient |
+| [**scheduling-service**](./scheduling-service) |  Slot booking with rich domain model and state machine | RestClient, Kafka, DDD |
+| [**billing-service**](./billing-service) | Payment processing via Stripe Checkout. Handles Stripe webhooks | Stripe API, Kafka |
 | [**analytics-service**](./analytics-service) | Consumes patient events from Kafka for analytics processing | Kafka Consumer, Protobuf |
 
 ## Tech Stack
